@@ -38,14 +38,14 @@
 <script setup lang="ts">
 import { Message, Modal } from "@arco-design/web-vue";
 import { computed, nextTick, onMounted, provide, reactive, ref } from "vue";
+import ContextMenu from "../../context-menu/index.vue";
 import { MapChart } from "../core/map-chart";
 import { SERIES } from "../core/map.config";
-import { ChartNode, ILine, INode, loadData, transform } from "../mock";
+import { ILine, INode, loadData, transform } from "../mock";
 import PanelHeader from "../panel-header/index.vue";
 import PanelLeft from "../panel-left/index.vue";
 import PanelMain from "../panel-main/index.vue";
 import PanelRight from "../panel-right/index.vue";
-import ContextMenu from "../../context-menu/index.vue";
 import { ICurrent, Mode, SelectType } from "./interface";
 
 const map = new MapChart();
@@ -81,6 +81,7 @@ current.contextmenu.items = [
     name: "打开文件...",
     onClick: () => {
       Message.info("提示：敬请期待!");
+      Message.error("错误：敬请期待!");
     },
     tip: "Ctrl + O",
   },
@@ -150,35 +151,31 @@ current.contextmenu.items = [
   {
     name: "导出为...",
     tip: "Ctrl + S",
-    onClick: () => {
-      const image = map.instance.getDataURL({
-        type: "png",
-        pixelRatio: 1,
-      });
-      const a = document.createElement("a");
-      a.href = image;
-      a.download = "map.png";
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      console.log(image);
-    },
     children: [
+      {
+        name: "导出为 .svg 文件",
+        onClick: () => {
+          onModifyRerender();
+        },
+      },
       {
         name: "导出为 .png 图片",
         onClick: () => {
-          onModifyRerender();
+          const image = map.instance.getDataURL({
+            type: "png",
+            pixelRatio: 1,
+          });
+          const a = document.createElement("a");
+          a.href = image;
+          a.download = "map.png";
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         },
       },
       {
         name: "导出为 .jpeg 图片",
-        onClick: () => {
-          onModifyRerender();
-        },
-      },
-      {
-        name: "导出为 .svg 文件",
         onClick: () => {
           onModifyRerender();
         },
@@ -281,18 +278,30 @@ const onModifyRerender = () => {
  * 初始化点击事件
  */
 const initNodeSelector = () => {
+  map.instance.on('georoam', () => {
+    const opts = map.instance.getOption() as any;
+    config.value.zoom = opts.geo[0].zoom;
+    console.log(opts.geo[0].zoom);
+  })
   map.instance.on("click", (params) => {
     if (current.mode !== Mode.NONE) {
       return;
     }
-    const data: ChartNode = (params.data as any)?.$data;
-    if (!data) {
-      return;
+    const mdata = (params.data as any).$data;
+    if (params.componentSubType === "lines") {
+      const node = data.value.find((i) => i.mid === mdata.mid);
+      console.log(node, mdata);
+      if (node) {
+        current.selected = node;
+        current.selectedType = SelectType.LINE;
+      }
     }
-    const node = nodeMap.value.get(data.mid);
-    if (node) {
-      current.selected = node;
-      current.selectedType = SelectType.NODE;
+    if (params.componentSubType === "scatter") {
+      const node = nodeMap.value.get(mdata.mid);
+      if (node) {
+        current.selected = node;
+        current.selectedType = SelectType.NODE;
+      }
     }
   });
 };

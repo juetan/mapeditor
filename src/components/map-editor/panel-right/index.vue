@@ -1,6 +1,6 @@
 <template>
   <div class="panel-right">
-    <div>属性设置</div>
+    <div style="margin-bottom: 12px;">属性设置</div>
     <TypeNode :current="current" v-if="current.selectedType === SelectType.NODE" />
     <TypeLine :current="current" v-else-if="current.selectedType === SelectType.LINE" />
     <TypeEdge :current="current" v-else-if="current.selectedType === SelectType.EDGE" />

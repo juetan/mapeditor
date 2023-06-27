@@ -75,6 +75,11 @@ export const DEFAULT_CONFIG = {
    * echarts的底图(SVG)
    */
   bgData: bgSVG,
+
+  /**
+   * 缩放比例(0 ~ 1)
+   */
+  zoom: 1,
 };
 
 export const DEFAULT_OPTIONS = {
@@ -87,8 +92,8 @@ export const DEFAULT_OPTIONS = {
       min: 0.5,
       max: 10,
     },
-    top: 0,
-    bottom: 0,
+    left: 0,
+    right: 0,
   },
   tooltip: {},
   series: [

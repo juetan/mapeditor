@@ -1,24 +1,25 @@
 <template>
-  <div>
-    <Form :model="current.selected" layout="vertical">
-      <FormItem label="边的宽度">
-        <InputNumber v-model="current.selected.edgeWidth"></InputNumber>
-      </FormItem>
-      <FormItem label="节点名称大小">
-        <InputNumber v-model="current.selected.nodeLabelSize"></InputNumber>
-      </FormItem>
-      <FormItem label="背景地图">
-        <input type="file" ref="inputRef" @change="onInputChange" style="display: none" />
-        <Button style="width: 100%" @click="onSelectFile">请选择SVG文件...</Button>
-      </FormItem>
-    </Form>
-  </div>
+  <Form :model="current.selected" layout="vertical">
+    <FormItem label="背景地图">
+      <input type="file" ref="inputRef" @change="onInputChange" style="display: none" />
+      <Button style="width: 100%" @click="onSelectFile">请选择SVG文件...</Button>
+    </FormItem>
+    <FormItem label="背景名称">
+      <Input v-model="current.selected.bgName" />
+    </FormItem>
+    <FormItem label="边的宽度">
+      <InputNumber v-model="current.selected.edgeWidth"></InputNumber>
+    </FormItem>
+    <FormItem label="节点名称大小">
+      <InputNumber v-model="current.selected.nodeLabelSize"></InputNumber>
+    </FormItem>
+  </Form>
 </template>
 
 <script setup lang="ts">
-import { Button, Form, FormItem, InputNumber } from "@arco-design/web-vue";
-import { ICurrent } from "../main/interface";
+import { Button, Form, FormItem, Input, InputNumber } from "@arco-design/web-vue";
 import { ref } from "vue";
+import { ICurrent } from "../main/interface";
 
 const current = defineModel<ICurrent>("current", { required: true });
 

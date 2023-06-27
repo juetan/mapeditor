@@ -10,6 +10,7 @@ export interface INode {
   labelY: number;
   labelRotate: number;
   inited: boolean;
+  color: string;
 }
 
 export interface IEdge {
@@ -26,35 +27,44 @@ export interface ILine {
   nodes: INode[];
 }
 
+export const randomColor = (): string => {
+  const r = Math.floor(Math.random() * 255);
+  const g = Math.floor(Math.random() * 255);
+  const b = Math.floor(Math.random() * 255);
+  return `rgb(${r},${g},${b})`;
+};
+
 export const loadData = (): ILine[] => {
-  const items = Array(3).fill(0);
+  const items = Array(12).fill(0);
   return items.map((_, index) => {
-    const _children = Array(30).fill(0);
+    const color = randomColor();
+    const _children = Array(10).fill(0);
     const nodes: INode[] = _children.map((_, _index) => {
       return {
         id: `${index}-${_index}`,
         mid: uniqueId(),
-        name: `子节点${_index}`,
-        x: 50 * (_index + 1),
-        y: 50 * (index + 1),
+        name: `子节点${index + 1}.${_index + 1}`,
+        x: 200 + 50 * (_index + 1),
+        y: 100 + 50 * (index + 1),
         labelX: 0,
         labelY: 0,
         labelRotate: 0,
         inited: false,
+        color,
       };
     });
     const edges: IEdge[] = _children.map((_, _index) => {
       return {
         name: "ss",
-        x: 50 * (_index + 1),
-        y: 50 * (index + 1),
+        x: 200 + 50 * (_index + 1),
+        y: 100 + 50 * (index + 1),
       };
     });
     return {
       id: `${index}`,
       mid: uniqueId(),
-      name: `节点${index}`,
-      color: "#09f",
+      name: `节点${index + 1}`,
+      color,
       edges,
       nodes,
     };
@@ -68,6 +78,9 @@ export interface ChartNode {
   value: [number, number];
   label: {
     offset: [number, number];
+  };
+  itemStyle: {
+    color: string;
   };
   $data: INode;
 }
@@ -102,6 +115,9 @@ export const transform = (data: ILine[]): [ChartNode[], ChartEdge[]] => {
         mid: node.mid,
         name: node.name,
         value: [node.x, node.y],
+        itemStyle: {
+          color: node.color,
+        },
         label: {
           offset: [node.labelX, node.labelY],
         },
@@ -110,22 +126,4 @@ export const transform = (data: ILine[]): [ChartNode[], ChartEdge[]] => {
     }
   }
   return [nodes, edges];
-};
-
-export const getNodes = (data: ILine[]) => {
-  return data.reduce((prev, curr) => {
-    curr.nodes.forEach((item) => {
-      prev.push({
-        id: item.id,
-        mid: item.mid,
-        name: item.name,
-        value: [item.x, item.y],
-        label: {
-          offset: [item.labelX, item.labelY],
-        },
-        $data: item,
-      });
-    });
-    return prev;
-  }, [] as ChartNode[]);
 };

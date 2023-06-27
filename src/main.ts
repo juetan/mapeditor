@@ -1,6 +1,11 @@
-import { createApp } from "vue";
-import "./assets/style.css";
-import App from "./App.vue";
+import { Message } from "@arco-design/web-vue";
 import "@arco-design/web-vue/dist/arco.css";
+import { createApp } from "vue";
+import App from "./App.vue";
+import "./assets/style.css";
 
-createApp(App).mount("#app");
+const app = createApp(App);
+
+Message._context = app._context;
+
+app.mount("#app");

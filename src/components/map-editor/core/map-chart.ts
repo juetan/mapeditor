@@ -50,6 +50,10 @@ export class MapChart {
      * 初始站点图标大小
      */
     nodeIconInit: number;
+    /**
+     * 缩放比例
+     */
+    zoom: number;
   } = DEFAULT_CONFIG;
 
   /**

@@ -1,7 +1,7 @@
 <template>
   <div>
     <Scrollbar style="height: 100%; overflow: auto" :type="'embed'">
-      <div style="padding: 16px">
+      <div style="padding: 12px 16px 12px 12px">
         <div style="margin-bottom: 8px">#线路列表</div>
         <Collapse :bordered="false" :expand-icon-position="'right'">
           <CollapseItem v-for="line in data" :key="line.id" :header="line.name">
@@ -91,7 +91,7 @@ const onItemClick = (item: INode) => {
 
 const onStartPick = async (line: ILine) => {
   if (line.edges.length) {
-    await Modal.confirm({ title: "提示", content: "当前已存在边，是否清除再继续?" });
+    await Modal.confirm({ title: "提示", content: "当前已存在边，是否清除再继续?", });
   }
   console.log("ok");
 };
@@ -185,5 +185,11 @@ div.arco-collapse-item-header {
 }
 div.arco-collapse-item-content {
   background-color: transparent;
+}
+div.arco-collapse-item:last-of-type {
+  border-bottom: 1px solid var(--color-border-2);
+}
+div.arco-collapse-item:first-of-type {
+  border-top: 1px solid var(--color-border-2);
 }
 </style>
