@@ -27,8 +27,8 @@
         @start-pick="onStartPick"
         class="editor-panel editor-left"
       />
-      <PanelMain class="editor-panel editor-main" @contextmenu="onContextMenu" @click="onMainClick">
-        <ContextMenu v-bind="current.contextmenu"></ContextMenu>
+      <PanelMain class="editor-panel editor-main" @contextmenu="onContextMenu">
+        <ContextMenu v-model:state="current.contextmenu"></ContextMenu>
       </PanelMain>
       <PanelRight v-model:current="current" class="editor-panel editor-right" />
     </div>
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { Modal } from "@arco-design/web-vue";
+import { Message, Modal } from "@arco-design/web-vue";
 import { computed, nextTick, onMounted, provide, reactive, ref } from "vue";
 import { MapChart } from "../core/map-chart";
 import { SERIES } from "../core/map.config";
@@ -45,7 +45,7 @@ import PanelHeader from "../panel-header/index.vue";
 import PanelLeft from "../panel-left/index.vue";
 import PanelMain from "../panel-main/index.vue";
 import PanelRight from "../panel-right/index.vue";
-import ContextMenu from "./context-menu.vue";
+import ContextMenu from "../../context-menu/index.vue";
 import { ICurrent, Mode, SelectType } from "./interface";
 
 const map = new MapChart();
@@ -72,19 +72,127 @@ const current = reactive<ICurrent>({
     show: false,
     x: 0,
     y: 0,
-    items: [
+    items: [],
+  },
+});
+
+current.contextmenu.items = [
+  {
+    name: "打开文件...",
+    onClick: () => {
+      Message.info("提示：敬请期待!");
+    },
+    tip: "Ctrl + O",
+  },
+  {
+    type: "divider",
+  },
+  {
+    name: "显示节点标签",
+    icon: () => (config.value.showNodeLabel ? "check" : ""),
+    onClick: () => {
+      onModifyShowLabel(!config.value.showNodeLabel);
+    },
+  },
+  {
+    name: "显示边线",
+    icon: () => (config.value.showNodeLabel ? "check" : ""),
+    onClick: () => {
+      onModifyShowLabel(!config.value.showNodeLabel);
+    },
+  },
+  {
+    name: "显示节点",
+    icon: () => (config.value.showNodeLabel ? "check" : ""),
+    onClick: () => {
+      onModifyShowLabel(!config.value.showNodeLabel);
+    },
+  },
+  {
+    type: "divider",
+  },
+  {
+    name: "重新渲染",
+    onClick: () => {
+      onModifyRerender();
+    },
+  },
+  {
+    icon: () => (current.mode === Mode.MODIFY_LINE ? "check" : ""),
+    name: "编辑边点",
+    onClick: () => {
+      if (current.mode === Mode.MODIFY_LINE) {
+        return onModifyNone();
+      }
+      onModifyEdge();
+    },
+  },
+  {
+    icon: () => (current.mode === Mode.MODIFY_NODE ? "check" : ""),
+    name: "编辑节点",
+    onClick: () => {
+      if (current.mode === Mode.MODIFY_NODE) {
+        return onModifyNone();
+      }
+      onModifyNode();
+    },
+  },
+  {
+    name: "取消编辑",
+    onClick: () => {
+      onModifyNone();
+    },
+    tip: "Esc",
+  },
+  {
+    type: "divider",
+  },
+  {
+    name: "导出为...",
+    tip: "Ctrl + S",
+    onClick: () => {
+      const image = map.instance.getDataURL({
+        type: "png",
+        pixelRatio: 1,
+      });
+      const a = document.createElement("a");
+      a.href = image;
+      a.download = "map.png";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      console.log(image);
+    },
+    children: [
       {
-        name: "编辑边点",
+        name: "导出为 .png 图片",
+        onClick: () => {
+          onModifyRerender();
+        },
+      },
+      {
+        name: "导出为 .jpeg 图片",
+        onClick: () => {
+          onModifyRerender();
+        },
+      },
+      {
+        name: "导出为 .svg 文件",
+        onClick: () => {
+          onModifyRerender();
+        },
       },
     ],
   },
-});
+];
+
 map.current = current;
 const nodeMap = computed(() => {
   const map = new Map<string, INode>();
   for (const line of data.value) {
     for (const node of line.nodes) {
-      map.set(node.id, node);
+      map.set(node.mid, node);
     }
   }
   return map;
@@ -130,12 +238,8 @@ const onContextMenu = (e: MouseEvent) => {
   current.contextmenu.y = e.offsetY;
 };
 
-const onMainClick = () => {
-  current.contextmenu.show = false;
-};
-
 const onModifyShowLabel = (value: boolean) => {
-  console.log("value", value);
+  config.value.showNodeLabel = value;
   map.instance.setOption({
     series: [
       {
@@ -178,7 +282,6 @@ const onModifyRerender = () => {
  */
 const initNodeSelector = () => {
   map.instance.on("click", (params) => {
-    console.log(params);
     if (current.mode !== Mode.NONE) {
       return;
     }
@@ -186,7 +289,7 @@ const initNodeSelector = () => {
     if (!data) {
       return;
     }
-    const node = nodeMap.value.get(data.id);
+    const node = nodeMap.value.get(data.mid);
     if (node) {
       current.selected = node;
       current.selectedType = SelectType.NODE;
@@ -208,6 +311,7 @@ const initEdgePointsPicker = () => {
     current.line?.edges.push({ x, y });
   });
   map.instance.getZr().on("click", (e) => {
+    current.contextmenu.show = false;
     if (current.mode !== Mode.ADD_EDGE_POINT) {
       return;
     }

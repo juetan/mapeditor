@@ -15,13 +15,34 @@
         >
           显示节点标签
         </Checkbox>
-        <Link type="text" @click="emit('modify-rerender')"> <IconRefresh /> 重新渲染 </Link>
-        <Link type="text" @click="emit('modify-edge')"> <IconLink /> 编辑边点 </Link>
-        <Link type="text" @click="emit('modify-node')"> <IconCopy /> 编辑节点 </Link>
-        <Link type="text" @click="emit('modify-none')"> <IconExport /> 取消编辑 </Link>
-        <Link type="text" @click="onSelectConfig"> <IconSettings /> 设置</Link>
-        <Link type="text"> <IconPlayArrow /> 预览</Link>
-        <Link type="text"> <IconCheck /> 保存</Link>
+        <Link type="text" @click="emit('modify-rerender')">
+          <template #icon><IconRefresh /></template>
+          重新渲染
+        </Link>
+        <Link type="text" @click="emit('modify-edge')">
+          <template #icon><IconLink /></template>
+          编辑边点
+        </Link>
+        <Link type="text" @click="emit('modify-node')">
+          <template #icon><IconCopy /></template>
+          编辑节点
+        </Link>
+        <Link type="text" @click="emit('modify-none')">
+          <template #icon><IconExport /></template>
+          取消编辑
+        </Link>
+        <Link type="text" @click="onSelectConfig">
+          <template #icon><IconSettings /></template>
+          设置
+        </Link>
+        <Link type="text">
+          <template #icon><IconPlayArrow /></template>
+          预览
+        </Link>
+        <Link type="text">
+          <template #icon><IconCheck /></template>
+          保存
+        </Link>
       </div>
     </template>
   </PageHeader>

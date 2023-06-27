@@ -4,5 +4,14 @@ import { defineConfig } from "vite";
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "./",
-  plugins: [vue({ script: { defineModel: true } })],
+  server: {
+    port: 8000,
+  },
+  plugins: [
+    /**
+     * 提供VUE SFC支持
+     * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
+     */
+    vue({ script: { defineModel: true } }),
+  ],
 });

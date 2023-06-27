@@ -1,4 +1,16 @@
-export const bgSVG = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1622" height="744" viewBox="0 0 1622 744" fill="none"><rect x="0" y="0" width="0" height="0" fill="rgba(249, 249, 249, 1)" /><path id="矩形 1" fill-rule="evenodd" style="fill:#CCCCCC" transform="translate(0 0)  rotate(0 811 372)" opacity="0" d="M0,744L1622,744L1622,0L0,0L0,744Z " /></svg>`;
+export const bgSVG = `<svg width="1660" height="849" xmlns="http://www.w3.org/2000/svg">
+<!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+<g>
+ <title>background</title>
+ <rect fill="#33cc99" id="canvas_background" height="851" width="1662" y="-1" x="-1"/>
+ <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
+  <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
+ </g>
+</g>
+<g>
+ <title>Layer 1</title>
+</g>
+</svg>`;
 
 /**
  * 标记Echarts中series的ID
@@ -115,6 +127,7 @@ export const DEFAULT_OPTIONS = {
         color: "#666",
         fontSize: DEFAULT_CONFIG.nodeLabelSize,
         position: "top",
+        formatter: "{b}",
         rich: {
           icon: {
             backgroundColor: {

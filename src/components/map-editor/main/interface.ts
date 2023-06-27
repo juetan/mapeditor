@@ -62,6 +62,6 @@ export interface ICurrent {
     show: boolean;
     x: number;
     y: number;
-    items: any[];
+    items: ({ type: 'divider' } | { name: string, icon?: () => string, tip?: string, onClick?: () => void, children?: any[] })[];
   };
 }
