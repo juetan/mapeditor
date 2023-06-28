@@ -1,5 +1,8 @@
 import { uniqueId } from "lodash-es";
 
+/**
+ * Node(Internal)
+ */
 export interface INode {
   id: string;
   mid: string;
@@ -13,11 +16,18 @@ export interface INode {
   color: string;
 }
 
+/**
+ * Edge(Internal)
+ */
 export interface IEdge {
+  mid: string;
   x: number;
   y: number;
 }
 
+/**
+ * Line(Internal)
+ */
 export interface ILine {
   id: string;
   mid: string;
@@ -27,6 +37,9 @@ export interface ILine {
   nodes: INode[];
 }
 
+/**
+ * generate random rgb color
+ */
 export const randomColor = (): string => {
   const r = Math.floor(Math.random() * 255);
   const g = Math.floor(Math.random() * 255);
@@ -34,6 +47,9 @@ export const randomColor = (): string => {
   return `rgb(${r},${g},${b})`;
 };
 
+/**
+ * mock data
+ */
 export const loadData = (): ILine[] => {
   const items = Array(12).fill(0);
   return items.map((_, index) => {
@@ -55,6 +71,7 @@ export const loadData = (): ILine[] => {
     });
     const edges: IEdge[] = _children.map((_, _index) => {
       return {
+        mid: uniqueId(),
         name: "ss",
         x: 200 + 50 * (_index + 1),
         y: 100 + 50 * (index + 1),
@@ -71,9 +88,11 @@ export const loadData = (): ILine[] => {
   });
 };
 
-export interface ChartNode {
+/**
+ * Echarts Scatter Series Item
+ */
+export interface EcScatterItem {
   id: string;
-  mid: string;
   name: string;
   value: [number, number];
   label: {
@@ -82,32 +101,39 @@ export interface ChartNode {
   itemStyle: {
     color: string;
   };
-  $data: INode;
+  mid: string;
+  mdata: INode;
 }
 
-export interface ChartEdge {
+/**
+ * Echarts Lines Series Item
+ */
+export interface EcLinesItem {
   id: string;
   mid: string;
-  coords: [number, number][];
+  mdata: ILine;
+  coords: number[][];
   lineStyle: {
     color: string;
   };
-  $data: ILine;
 }
 
-export const transform = (data: ILine[]): [ChartNode[], ChartEdge[]] => {
-  const nodes: ChartNode[] = [];
-  const edges: ChartEdge[] = [];
+/**
+ * Transform data to Echarts series data
+ */
+export const transform = (data: ILine[]): [EcScatterItem[], EcLinesItem[]] => {
+  const nodes: EcScatterItem[] = [];
+  const edges: EcLinesItem[] = [];
   for (const line of data) {
-    const coords = line.edges.map((i) => [i.x, i.y] as [number, number]);
+    const coords = line.edges.map((i) => [i.x, i.y, i.mid] as number[]);
     edges.push({
       id: line.id,
       mid: line.mid,
+      mdata: line,
       coords,
       lineStyle: {
         color: line.color,
       },
-      $data: line,
     });
     for (const node of line.nodes) {
       nodes.push({
@@ -121,7 +147,7 @@ export const transform = (data: ILine[]): [ChartNode[], ChartEdge[]] => {
         label: {
           offset: [node.labelX, node.labelY],
         },
-        $data: node,
+        mdata: node,
       });
     }
   }

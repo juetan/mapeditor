@@ -3,51 +3,55 @@
     ref="contextmenuRef"
     class="me-contextmenu"
     :style="{
-      display: state.show ? 'grid' : 'none',
-      left: state.x + 'px',
-      top: state.y + 'px',
+      display: props.show ? 'grid' : 'none',
+      left: props.x + 'px',
+      top: props.y + 'px',
     }"
     @contextmenu="onContextMenu"
   >
-    <MeMenu v-bind="state" @done="() => (state.show = false)" />
+    <MeMenu v-bind="props" @done="onDone" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onUnmounted } from "vue";
-import { nextTick } from "vue";
 import { onMounted } from "vue";
 import { ref } from "vue";
 import MeMenu from "./menu.vue";
+import { PropType } from "vue";
 
 defineOptions({
   name: "MeContextmenu",
 });
 
-const state = defineModel<{
-  show: boolean;
-  x: number;
-  y: number;
-  items: any[];
-}>("state", { required: true });
+const props = defineProps({
+  show: {
+    type: Boolean,
+    default: false,
+  },
+  x: {
+    type: Number,
+    default: 0,
+  },
+  y: {
+    type: Number,
+    default: 0,
+  },
+  items: {
+    type: Array as PropType<any[]>,
+  },
+});
 
 const onContextMenu = (e: MouseEvent) => {
   e.preventDefault();
   e.stopPropagation();
 };
 
-const treeEach = (tree: any[], fn: (item: any) => void) => {
-  tree.forEach((item) => {
-    fn(item);
-    if (item.children) {
-      treeEach(item.children, fn);
-    }
-  });
-};
+const emit = defineEmits(["done"]);
 
-treeEach(state.value.items, (item) => {
-  item.showChildren = false;
-});
+const onDone = () => {
+  emit("done");
+};
 
 const contextmenuRef = ref<HTMLDivElement>();
 
@@ -55,11 +59,10 @@ const onClick = (e: Event) => {
   if (contextmenuRef.value?.contains(e.target as Node)) {
     return;
   }
-  state.value.show = false;
+  emit("done");
 };
 
-onMounted(async () => {
-  await nextTick();
+onMounted(() => {
   document.addEventListener("click", onClick);
 });
 

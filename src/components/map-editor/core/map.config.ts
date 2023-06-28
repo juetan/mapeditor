@@ -1,3 +1,11 @@
+import {
+  ComposeOption,
+  GeoComponentOption,
+  LinesSeriesOption,
+  ScatterSeriesOption,
+  TooltipComponentOption,
+} from "echarts";
+
 export const bgSVG = `<svg width="1660" height="849" xmlns="http://www.w3.org/2000/svg">
 <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
 <g>
@@ -82,7 +90,11 @@ export const DEFAULT_CONFIG = {
   zoom: 1,
 };
 
-export const DEFAULT_OPTIONS = {
+export type EcOptions = ComposeOption<
+  ScatterSeriesOption | LinesSeriesOption | TooltipComponentOption | GeoComponentOption
+>;
+
+export const DEFAULT_OPTIONS: EcOptions = {
   geo: {
     map: "blank.svg",
     roam: true,

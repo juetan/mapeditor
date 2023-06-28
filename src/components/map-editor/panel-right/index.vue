@@ -11,13 +11,13 @@
 
 <script setup lang="ts">
 import { Empty } from "@arco-design/web-vue";
-import { ICurrent, SelectType } from "../main/interface";
+import { MeContext, SelectType } from "../main/interface";
 import TypeConfig from "./type-config.vue";
 import TypeEdge from "./type-edge.vue";
 import TypeLine from "./type-line.vue";
 import TypeNode from "./type-node.vue";
 
-defineModel<ICurrent>("current", { required: true });
+defineModel<MeContext>("current", { required: true });
 </script>
 
 <style>

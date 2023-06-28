@@ -3,6 +3,7 @@ import "echarts";
 
 declare module "echarts" {
   interface OptionDataItem {
-    $data: any;
+    mid: string;
+    mdata: any;
   }
 }

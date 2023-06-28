@@ -1,6 +1,5 @@
 <template>
   <div
-    ref="contextmenuRef"
     class="me-contextmenu"
     :style="{
       display: show ? 'grid' : 'none',
@@ -8,9 +7,8 @@
       top: top + 'px',
     }"
   >
-    <template v-for="item in items" :key="item.name">
+    <template v-for="item in items" :key="item.uid">
       <div v-if="item.type === 'divider'" class="me-contextmenu-divider"></div>
-
       <div
         v-else
         class="me-contextmenu-item"
@@ -22,25 +20,19 @@
             <IconCheck v-if="item.icon?.() === 'check'" />
             <component v-else :is="item.icon"></component>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px">
+          <div class="me-contextmenu-action">
             <span class="me-contextmenu-name"> {{ item.name }} </span>
             <span class="me-contextmenu-tip"> {{ item.tip }} </span>
           </div>
-          <div class="me-contextmenu-expand" v-if="item.children">
-            <IconRight />
+          <div class="me-contextmenu-expand">
+            <IconRight v-if="item.children" />
           </div>
         </div>
         <MeContextmenuMenu
           v-if="item.children"
-          v-bind="{
-            show: item.showChildren,
-            items: item.children,
-          }"
-          :style="{
-            position: 'absolute',
-            top: 0,
-            left: '100%',
-          }"
+          :show="item.showChildren"
+          :items="item.children"
+          :style="{ position: 'absolute', top: 0, left: '100%' }"
           @done="emit('done')"
         />
       </div>
@@ -54,6 +46,9 @@ import { PropType } from "vue";
 
 defineOptions({
   name: "MeContextmenuMenu",
+  errorCaptured(e) {
+    console.log(e);
+  },
 });
 
 defineProps({
@@ -140,5 +135,11 @@ const onItemClick = async (click: Function) => {
 }
 .me-contextmenu-expand {
   color: var(--color-neutral-5);
+}
+.me-contextmenu-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
 }
 </style>

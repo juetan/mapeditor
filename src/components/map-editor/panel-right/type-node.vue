@@ -28,9 +28,9 @@
 
 <script setup lang="ts">
 import { Form, FormItem, Input, InputNumber } from "@arco-design/web-vue";
-import { ICurrent } from "../main/interface";
+import { MeContext } from "../main/interface";
 
-defineModel<ICurrent>("current", { required: true });
+defineModel<MeContext>("current", { required: true });
 </script>
 
 <style scoped></style>

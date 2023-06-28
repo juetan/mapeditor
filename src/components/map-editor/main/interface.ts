@@ -1,3 +1,4 @@
+import { VNode } from "vue";
 import { ILine, INode } from "../mock";
 
 /**
@@ -44,7 +45,32 @@ export const enum SelectType {
   LINE = "line",
 }
 
-export interface ICurrent {
+export type ContextmenuEventItem = {
+  /**
+   * 显示名称
+   */
+  name: string;
+  /**
+   * 提示语
+   */
+  tip?: string;
+  /**
+   * 子项
+   */
+  children?: any[];
+  /**
+   * 图标(支持JSX)
+   */
+  icon?: () => string | VNode;
+  /**
+   * 处理函数
+   */
+  onClick?: () => void;
+};
+
+export type ContextmenuItem = { type: "divider" } | ContextmenuEventItem;
+
+export interface MeContext {
   mode: Mode;
   selected: any;
   selectedType?: SelectType;
@@ -62,6 +88,6 @@ export interface ICurrent {
     show: boolean;
     x: number;
     y: number;
-    items: ({ type: 'divider' } | { name: string, icon?: () => string, tip?: string, onClick?: () => void, children?: any[] })[];
+    items: ContextmenuItem[];
   };
 }

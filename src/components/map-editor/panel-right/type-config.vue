@@ -19,9 +19,9 @@
 <script setup lang="ts">
 import { Button, Form, FormItem, Input, InputNumber } from "@arco-design/web-vue";
 import { ref } from "vue";
-import { ICurrent } from "../main/interface";
+import { MeContext } from "../main/interface";
 
-const current = defineModel<ICurrent>("current", { required: true });
+const current = defineModel<MeContext>("current", { required: true });
 
 const inputRef = ref<HTMLInputElement>();
 

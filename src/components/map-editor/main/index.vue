@@ -27,8 +27,8 @@
         @start-pick="onStartPick"
         class="editor-panel editor-left"
       />
-      <PanelMain class="editor-panel editor-main" @contextmenu="onContextMenu">
-        <ContextMenu v-model:state="current.contextmenu"></ContextMenu>
+      <PanelMain class="editor-panel editor-main">
+        <ContextMenu v-bind="current.contextmenu" @done="() => (current.contextmenu.show = false)"></ContextMenu>
       </PanelMain>
       <PanelRight v-model:current="current" class="editor-panel editor-right" />
     </div>
@@ -36,25 +36,31 @@
 </template>
 
 <script setup lang="ts">
-import { Message, Modal } from "@arco-design/web-vue";
+import { Modal } from "@arco-design/web-vue";
 import { computed, nextTick, onMounted, provide, reactive, ref } from "vue";
 import ContextMenu from "../../context-menu/index.vue";
 import { MapChart } from "../core/map-chart";
 import { SERIES } from "../core/map.config";
-import { ILine, INode, loadData, transform } from "../mock";
+import { EcLinesItem, EcScatterItem, ILine, INode, IEdge, loadData, transform } from "../mock";
 import PanelHeader from "../panel-header/index.vue";
 import PanelLeft from "../panel-left/index.vue";
 import PanelMain from "../panel-main/index.vue";
 import PanelRight from "../panel-right/index.vue";
-import { ICurrent, Mode, SelectType } from "./interface";
+import { MeContext, Mode, SelectType, ContextmenuItem } from "./interface";
+import { h } from "vue";
+import { IconDelete, IconExport, IconImport } from "@arco-design/web-vue/es/icon";
+import { uniqueId } from "lodash-es";
 
 const map = new MapChart();
 const data = ref<ILine[]>([]);
 const config = ref({
   ...map.config,
   showNodeLabel: true,
+  shwoEdge: true,
+  showNode: true,
 });
-const current = reactive<ICurrent>({
+
+const current = reactive<MeContext>({
   mode: Mode.NONE,
   line: undefined,
   site: undefined,
@@ -76,17 +82,75 @@ const current = reactive<ICurrent>({
   },
 });
 
-current.contextmenu.items = [
+const treeEach = (tree: any[], fn: (item: any) => void) => {
+  tree.forEach((item) => {
+    fn(item);
+    if (item.children) {
+      treeEach(item.children, fn);
+    }
+  });
+};
+
+const openContextmenu = (x: number, y: number, items: ContextmenuItem[]) => {
+  treeEach(items, (item) => {
+    item.uid = uniqueId();
+    item.showChildren = false;
+  });
+  current.contextmenu.items = items;
+  current.contextmenu.x = x;
+  current.contextmenu.y = y;
+  current.contextmenu.show = true;
+};
+
+const contextItems: ContextmenuItem[] = [
   {
     name: "打开文件...",
-    onClick: () => {
-      Message.info("提示：敬请期待!");
-      Message.error("错误：敬请期待!");
-    },
     tip: "Ctrl + O",
+    onClick: () => {
+      Modal.info({
+        title: "打开文件",
+        content: () => h("div", { style: "margin: 20px" }, "暂未实现"),
+        simple: false,
+        titleAlign: "start",
+        closable: false,
+        alignCenter: true,
+        modalStyle: {
+          top: "50%",
+          transform: "translateY(-50%)",
+        },
+      });
+    },
   },
   {
     type: "divider",
+  },
+  {
+    name: "显示边线",
+    icon: () => (config.value.shwoEdge ? "check" : ""),
+    onClick: () => {
+      if (config.value.shwoEdge) {
+        map.setEdges([]);
+        config.value.shwoEdge = false;
+      } else {
+        const [_, edges] = transform(data.value);
+        map.setEdges(edges);
+        config.value.shwoEdge = true;
+      }
+    },
+  },
+  {
+    name: "显示节点",
+    icon: () => (config.value.showNode ? "check" : ""),
+    onClick: () => {
+      if (config.value.showNode) {
+        map.setNodes([]);
+        config.value.showNode = false;
+      } else {
+        const [nodes] = transform(data.value);
+        map.setNodes(nodes);
+        config.value.showNode = true;
+      }
+    },
   },
   {
     name: "显示节点标签",
@@ -96,27 +160,7 @@ current.contextmenu.items = [
     },
   },
   {
-    name: "显示边线",
-    icon: () => (config.value.showNodeLabel ? "check" : ""),
-    onClick: () => {
-      onModifyShowLabel(!config.value.showNodeLabel);
-    },
-  },
-  {
-    name: "显示节点",
-    icon: () => (config.value.showNodeLabel ? "check" : ""),
-    onClick: () => {
-      onModifyShowLabel(!config.value.showNodeLabel);
-    },
-  },
-  {
     type: "divider",
-  },
-  {
-    name: "重新渲染",
-    onClick: () => {
-      onModifyRerender();
-    },
   },
   {
     icon: () => (current.mode === Mode.MODIFY_LINE ? "check" : ""),
@@ -140,34 +184,31 @@ current.contextmenu.items = [
   },
   {
     name: "取消编辑",
+    tip: "Esc",
     onClick: () => {
       onModifyNone();
     },
-    tip: "Esc",
+  },
+  {
+    name: "重新渲染",
+    onClick: () => {
+      onModifyRerender();
+    },
   },
   {
     type: "divider",
   },
   {
-    name: "导出为...",
+    name: "保存为...",
     tip: "Ctrl + S",
     children: [
       {
-        name: "导出为 .svg 文件",
+        name: "保存为 .svg 文件",
         onClick: () => {
-          onModifyRerender();
-        },
-      },
-      {
-        name: "导出为 .png 图片",
-        onClick: () => {
-          const image = map.instance.getDataURL({
-            type: "png",
-            pixelRatio: 1,
-          });
+          const image = map.instance.getDataURL({ type: "svg" });
           const a = document.createElement("a");
           a.href = image;
-          a.download = "map.png";
+          a.download = "mapeditor.svg";
           a.style.display = "none";
           document.body.appendChild(a);
           a.click();
@@ -175,17 +216,32 @@ current.contextmenu.items = [
         },
       },
       {
-        name: "导出为 .jpeg 图片",
-        onClick: () => {
-          onModifyRerender();
-        },
+        name: "保存为 .JSON 文件",
+        onClick: () => {},
       },
     ],
   },
 ];
 
+const pointItems: ContextmenuItem[] = [
+  {
+    name: "向前添加",
+    icon: () => h(IconImport),
+    onClick: () => null,
+  },
+  {
+    name: "向后添加",
+    icon: () => h(IconExport),
+  },
+  {
+    name: "删除该点",
+    icon: () => h(IconDelete),
+  },
+];
+
 map.current = current;
 const nodeMap = computed(() => {
+  console.log('cpt');
   const map = new Map<string, INode>();
   for (const line of data.value) {
     for (const node of line.nodes) {
@@ -194,6 +250,16 @@ const nodeMap = computed(() => {
   }
   return map;
 });
+const edgeMap = computed(() => {
+  const map = new Map<string, IEdge>();
+  for (const line of data.value) {
+    for (const node of line.edges) {
+      map.set(node.mid, node);
+    }
+  }
+  return map;
+});
+
 const stat = computed(() => {
   let lineCount = 0;
   let lineTotal = 0;
@@ -217,23 +283,35 @@ const init = async () => {
   const [nodes, edges] = transform(data.value);
   map.setNodes(nodes);
   map.setEdges(edges);
+  initPointHandler();
   initNodeSelector();
   initContextMenu();
   initEdgePointsPicker();
+};
+
+const initPointHandler = () => {
+  map.onNodePointChange = (node) => {
+    const { mid, x, y } = node;
+    const n = nodeMap.value.get(mid);
+    if (n) {
+      n.x = x;
+      n.y = y;
+    }
+  };
+  map.onEdgePointChange = (node) => {
+    const { mid, x, y } = node;
+    const n = edgeMap.value.get(mid);
+    if (n) {
+      n.x = x;
+      n.y = y;
+    }
+  };
 };
 
 onMounted(() => {
   data.value = loadData();
   init();
 });
-
-const onContextMenu = (e: MouseEvent) => {
-  console.log(e);
-  e.preventDefault();
-  current.contextmenu.show = true;
-  current.contextmenu.x = e.offsetX;
-  current.contextmenu.y = e.offsetY;
-};
 
 const onModifyShowLabel = (value: boolean) => {
   config.value.showNodeLabel = value;
@@ -278,25 +356,25 @@ const onModifyRerender = () => {
  * 初始化点击事件
  */
 const initNodeSelector = () => {
-  map.instance.on('georoam', () => {
+  map.instance.on("georoam", () => {
     const opts = map.instance.getOption() as any;
     config.value.zoom = opts.geo[0].zoom;
-    console.log(opts.geo[0].zoom);
-  })
+  });
+
   map.instance.on("click", (params) => {
     if (current.mode !== Mode.NONE) {
       return;
     }
-    const mdata = (params.data as any).$data;
     if (params.componentSubType === "lines") {
+      const mdata = (params.data as EcLinesItem).mdata;
       const node = data.value.find((i) => i.mid === mdata.mid);
-      console.log(node, mdata);
       if (node) {
         current.selected = node;
         current.selectedType = SelectType.LINE;
       }
     }
     if (params.componentSubType === "scatter") {
+      const mdata = (params.data as EcScatterItem).mdata;
       const node = nodeMap.value.get(mdata.mid);
       if (node) {
         current.selected = node;
@@ -317,10 +395,37 @@ const initEdgePointsPicker = () => {
       return;
     }
     const [x, y] = params.value as [number, number];
-    current.line?.edges.push({ x, y });
+    current.line?.edges.push({ x, y, mid: uniqueId() });
   });
-  map.instance.getZr().on("click", (e) => {
+
+  map.instance.on("contextmenu", (params) => {
+    console.log(params);
+    params.event?.event.preventDefault();
+    if (params.componentSubType === "scatter") {
+      console.log("contextmenu scatter");
+    }
+    if (params.componentType === "graphic") {
+      const x = params.event?.offsetX ?? 0;
+      const y = params.event?.offsetY ?? 0;
+      openContextmenu(x, y, pointItems);
+      console.log("contextmenu graphic");
+    }
+  });
+
+  map.instance.getZr().on("mousedown", () => {
     current.contextmenu.show = false;
+  });
+
+  map.instance.getZr().on("contextmenu", (params) => {
+    if (params.target) {
+      return;
+    }
+    params.event.preventDefault();
+    const { offsetX, offsetY } = params.event as MouseEvent;
+    openContextmenu(offsetX, offsetY, contextItems);
+  });
+
+  map.instance.getZr().on("click", (e) => {
     if (current.mode !== Mode.ADD_EDGE_POINT) {
       return;
     }
@@ -328,13 +433,11 @@ const initEdgePointsPicker = () => {
       return;
     }
     const pixels = [e.offsetX, e.offsetY];
-    console.log(pixels);
     if (!map.instance.containPixel("geo", pixels)) {
       return;
     }
     const [x, y] = map.instance.convertFromPixel("geo", pixels);
-    current.line?.edges.push({ x, y });
-    console.log(pixels);
+    current.line?.edges.push({ x, y, mid: uniqueId() });
   });
 };
 
@@ -351,14 +454,13 @@ const onDragEnd = () => {
     return;
   }
   const dom = map.instance.getDom() as HTMLElement;
-  const { left, top } = dom.getBoundingClientRect();
+  const { left, top, width, height } = dom.getBoundingClientRect();
   const x1 = current.dragger.x - left;
   const y1 = current.dragger.y - top;
-  if (x1 < 0 || y1 < 0) {
+  if (x1 < 0 || y1 < 0 || x1 > left + width || y1 > top + height) {
     return;
   }
   if (!map.instance.containPixel("geo", [x1, y1])) {
-    console.log("out of map");
     return;
   }
   const [x, y] = map.instance.convertFromPixel("geo", [x1, y1]);

@@ -40,9 +40,9 @@
                 @mousedown="onMouseDown(node, $event)"
               >
                 <span>{{ `${String(index + 1).padStart(2)}. ${node.name}` }}</span>
-                <span :title="!node.inited ? '该节点尚未初始化，请拖拽到画布中进行初始化' : ''">
+                <span :title="!node.inited ? '该节点尚未初始化，请拖拽到画布中进行初始化' : ''" style="cursor: initial">
                   <IconCheck v-if="node.inited" style="color: #3c9"></IconCheck>
-                  <IconInfo v-else></IconInfo>
+                  <IconQuestionCircle v-else style="color: var(--color-neutral-5)" />
                 </span>
               </li>
             </ul>
@@ -67,9 +67,9 @@
 
 <script setup lang="ts">
 import { Collapse, CollapseItem, Modal, Scrollbar } from "@arco-design/web-vue";
-import { IconCheck, IconInfo } from "@arco-design/web-vue/es/icon";
+import { IconCheck, IconQuestionCircle } from "@arco-design/web-vue/es/icon";
 import { PropType } from "vue";
-import { ICurrent, SelectType } from "../main/interface";
+import { MeContext, SelectType } from "../main/interface";
 import { ILine, INode } from "../mock";
 
 defineProps({
@@ -78,7 +78,7 @@ defineProps({
     required: true,
   },
 });
-const current = defineModel<ICurrent>("current", { required: true });
+const current = defineModel<MeContext>("current", { required: true });
 const emit = defineEmits(["drag-end", "start-pick"]);
 
 const onItemClick = (item: INode) => {
@@ -91,7 +91,7 @@ const onItemClick = (item: INode) => {
 
 const onStartPick = async (line: ILine) => {
   if (line.edges.length) {
-    await Modal.confirm({ title: "提示", content: "当前已存在边，是否清除再继续?", });
+    await Modal.confirm({ title: "提示", content: "当前已存在边，是否清除再继续?" });
   }
   console.log("ok");
 };

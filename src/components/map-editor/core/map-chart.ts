@@ -1,7 +1,7 @@
 import * as echarts from "echarts";
 import { Mode } from "../main/interface";
-import { ChartEdge, ChartNode } from "../mock";
-import { DEFAULT_CONFIG, DEFAULT_OPTIONS, SERIES } from "./map.config";
+import { EcLinesItem, EcScatterItem } from "../mock";
+import { DEFAULT_CONFIG, DEFAULT_OPTIONS, EcOptions, SERIES } from "./map.config";
 
 export class MapChart {
   /**
@@ -64,7 +64,7 @@ export class MapChart {
   /**
    * 节点坐标变化回调
    */
-  onNodePointChange?: (data: { x: number; y: number }) => void;
+  onNodePointChange?: (data: { mid: string; x: number; y: number }) => void;
 
   /**
    * 边点坐标映射
@@ -74,7 +74,7 @@ export class MapChart {
   /**
    * 边点坐标变化回调
    */
-  onEdgePointChange?: (data: { x: number; y: number }) => void;
+  onEdgePointChange?: (data: { mid: string; x: number; y: number }) => void;
 
   /**
    * 初始化
@@ -108,7 +108,7 @@ export class MapChart {
     const nodes = this.getNodes();
     const elements = nodes.map((item, i) => {
       const [x, y] = item.value;
-      const { color = "red" } = (item.$data as any) || {};
+      const { color = "red" } = (item.mdata as any) || {};
       const coord = this.nodePointMap[i] || [Number(x), Number(y)];
       const position = this.instance.convertToPixel("geo", coord);
       return {
@@ -143,7 +143,7 @@ export class MapChart {
           const data = map.getNodes();
           data[i].value = position;
           map.setNodes(data);
-          map.onNodePointChange?.({ x: position[0], y: position[1] });
+          map.onNodePointChange?.({ mid: item.mid, x: position[0], y: position[1] });
         },
       };
     });
@@ -169,10 +169,9 @@ export class MapChart {
     const edges = this.getEdges();
     const elements = edges.reduce((acc, item) => {
       const items = item.coords.map((coord, index) => {
-        const [x, y] = coord;
-        const coords = this.edgePointMap[`${item.id}.${index}`] || [x, y];
+        const coords: [number, number] = this.edgePointMap[`${item.id}.${index}`] || coord;
         const position = this.instance.convertToPixel("geo", coords);
-        const ondrag = function (this: { x: number; y: number }) {
+        const ondrag: any = function (this: { x: number; y: number }) {
           const data = map.getEdges();
           const currentItem = data.find((i) => i.id === item.id);
           if (!currentItem) {
@@ -181,10 +180,10 @@ export class MapChart {
           const position = map.instance.convertFromPixel("geo", [this.x, this.y]) as [number, number];
           map.edgePointMap[`${item.id}.${index}`] = position;
           currentItem.coords[index] = position;
-          // map?.onLinePointChange?.({ index, parentIndex, x: position[0], y: position[1] });
+          map.onEdgePointChange?.({ mid: coord[2] as unknown as string, x: position[0], y: position[1] });
           map.setEdges(data);
         };
-        const graphic = {
+        const graphic: echarts.GraphicComponentOption = {
           type: "circle",
           textContent: {
             z: 1000,
@@ -196,7 +195,7 @@ export class MapChart {
           textConfig: {
             position: "inside",
             distance: 0,
-            insideFill: item.$data?.color ?? "red",
+            insideFill: item.mdata?.color ?? "red",
           },
           info: {
             index,
@@ -207,10 +206,11 @@ export class MapChart {
           },
           style: {
             fill: "#fff",
-            stroke: item.$data?.color ?? "red",
+            stroke: item.mdata?.color ?? "red",
             lineWidth: 1.5 * zoom,
           },
-          position,
+          x: position[0],
+          y: position[1],
           invisible: false,
           draggable: true,
           z: 100,
@@ -228,7 +228,7 @@ export class MapChart {
    * 重新设置大小
    */
   resize() {
-    this.resizeNodesAndEdges();
+    this.resetNodesAndEdges();
     this.setNodePoints();
     this.setEdgePoints();
   }
@@ -236,17 +236,17 @@ export class MapChart {
   /**
    * 重置节点和边的大小
    */
-  resizeNodesAndEdges() {
+  resetNodesAndEdges() {
     const opts = this.instance.getOption() as any;
     const zoom = opts.geo[0].zoom;
     const nodes = this.getNodes();
     for (const node of nodes) {
-      const x = node.$data.labelX * zoom;
-      const y = node.$data.labelY * zoom;
+      const x = node.mdata.labelX * zoom;
+      const y = node.mdata.labelY * zoom;
       node.label.offset = [x, y];
     }
     const { edgeWidth, nodeSymbolSize, nodeLabelSize, nodeIconSize } = this.config;
-    const options = {
+    const options: EcOptions = {
       series: [
         {
           id: SERIES.EDGE_ID,
@@ -257,6 +257,7 @@ export class MapChart {
         {
           id: SERIES.NODE_ID,
           symbolSize: nodeSymbolSize * zoom,
+          data: nodes,
           label: {
             fontSize: nodeLabelSize * zoom,
             rich: {
@@ -270,7 +271,6 @@ export class MapChart {
               },
             },
           },
-          data: nodes,
         },
       ],
     };
@@ -280,7 +280,7 @@ export class MapChart {
   /**
    * 获取边的数据
    */
-  getEdges(): ChartEdge[] {
+  getEdges(): EcLinesItem[] {
     const opts = this.instance.getOption() as any;
     const edge = opts.series.find((i: any) => i.id === SERIES.EDGE_ID);
     return edge?.data ?? [];
@@ -289,14 +289,14 @@ export class MapChart {
   /**
    * 设置边的数据
    */
-  setEdges(data: ChartEdge[]) {
+  setEdges(data: EcLinesItem[]) {
     this.instance.setOption({ series: [{ id: SERIES.EDGE_ID, data }] });
   }
 
   /**
    * 获取节点数据
    */
-  getNodes(): ChartNode[] {
+  getNodes(): EcScatterItem[] {
     const opts = this.instance.getOption() as any;
     const node = opts.series.find((i: any) => i.id === SERIES.NODE_ID);
     return node?.data ?? [];
@@ -305,7 +305,7 @@ export class MapChart {
   /**
    * 设置节点数据
    */
-  setNodes(data: any[]) {
+  setNodes(data: EcScatterItem[]) {
     this.instance.setOption({ series: [{ id: SERIES.NODE_ID, data }] });
   }
 

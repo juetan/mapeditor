@@ -59,7 +59,7 @@ IconPlayArrow,
 IconRefresh,
 IconSettings,
 } from "@arco-design/web-vue/es/icon";
-import { ICurrent, SelectType } from "../main/interface";
+import { MeContext, SelectType } from "../main/interface";
 
 const props = defineProps({
   stat: {
@@ -72,7 +72,7 @@ const props = defineProps({
   },
 });
 
-const current = defineModel<ICurrent>("current", { required: true });
+const current = defineModel<MeContext>("current", { required: true });
 const emit = defineEmits(["modify-node", "modify-none", "modify-edge", "modify-show-label", "modify-rerender"]);
 
 const onSelectConfig = () => {
