@@ -1,9 +1,10 @@
 <template>
-  <PageHeader title="地图编辑器" class="editor-header">
+  <PageHeader title="地图编辑器" class="editor-header" @back="emit('back')">
     <template #title>
       <span>地图编辑器</span>
       <span class="editor-tip">
-        &nbsp;(线路：{{ stat.lineCount }}/{{ stat.lineTotal }} , 节点: {{ stat.nodeCount }}/{{ stat.nodeTotal }} ; 缩放比例：{{ (config.zoom * 100).toFixed(2) }}%)
+        &nbsp;(线路：{{ stat.lineCount }}/{{ stat.lineTotal }} , 节点: {{ stat.nodeCount }}/{{ stat.nodeTotal }} ;
+        缩放比例：{{ (config.zoom * 100).toFixed(2) }}%)
       </span>
     </template>
     <template #extra>
@@ -39,7 +40,7 @@
           <template #icon><IconPlayArrow /></template>
           预览效果
         </Link>
-        <Link type="text">
+        <Link type="text" @click="emit('save')">
           <template #icon><IconCheck /></template>
           立即保存
         </Link>
@@ -73,13 +74,20 @@ const props = defineProps({
 });
 
 const current = defineModel<MeContext>("current", { required: true });
-const emit = defineEmits(["modify-node", "modify-none", "modify-edge", "modify-show-label", "modify-rerender"]);
+const emit = defineEmits([
+  "modify-node",
+  "modify-none",
+  "modify-edge",
+  "modify-show-label",
+  "modify-rerender",
+  "back",
+  "save",
+]);
 
 const onSelectConfig = () => {
   current.value.selectedType = SelectType.CONFIG;
   current.value.selected = props.config;
 };
-
 </script>
 
 <style>

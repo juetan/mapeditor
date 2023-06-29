@@ -12,6 +12,8 @@
         :stat="stat"
         :config="config"
         v-model:current="current"
+        @back="onBack"
+        @save="onSave"
         @modify-node="onModifyNode"
         @modify-edge="onModifyEdge"
         @modify-none="onModifyNone"
@@ -36,20 +38,19 @@
 </template>
 
 <script setup lang="ts">
-import { Modal } from "@arco-design/web-vue";
-import { computed, nextTick, onMounted, provide, reactive, ref } from "vue";
+import { Modal, ModalConfig } from "@arco-design/web-vue";
+import { IconDelete, IconExport, IconImport } from "@arco-design/web-vue/es/icon";
+import { uniqueId } from "lodash-es";
+import { computed, h, nextTick, onMounted, provide, reactive, ref } from "vue";
 import ContextMenu from "../../context-menu/index.vue";
 import { MapChart } from "../core/map-chart";
 import { SERIES } from "../core/map.config";
-import { EcLinesItem, EcScatterItem, ILine, INode, IEdge, loadData, transform } from "../mock";
+import { EcLinesItem, EcScatterItem, IEdge, ILine, INode, loadData, saveData, transform } from "../mock";
 import PanelHeader from "../panel-header/index.vue";
 import PanelLeft from "../panel-left/index.vue";
 import PanelMain from "../panel-main/index.vue";
 import PanelRight from "../panel-right/index.vue";
-import { MeContext, Mode, SelectType, ContextmenuItem } from "./interface";
-import { h } from "vue";
-import { IconDelete, IconExport, IconImport } from "@arco-design/web-vue/es/icon";
-import { uniqueId } from "lodash-es";
+import { ContextmenuItem, MeContext, Mode, SelectType } from "./interface";
 
 const map = new MapChart();
 const data = ref<ILine[]>([]);
@@ -102,12 +103,52 @@ const openContextmenu = (x: number, y: number, items: ContextmenuItem[]) => {
   current.contextmenu.show = true;
 };
 
+const confirm = (content: string | ModalConfig) => {
+  const config =
+    typeof content === "string" ? { content: () => h("div", { style: "margin: 20px" }, content) } : content;
+  return new Promise<void>((resolve, reject) => {
+    Modal.confirm({
+      title: "提示",
+      simple: false,
+      titleAlign: "start",
+      closable: false,
+      alignCenter: true,
+      modalStyle: {
+        top: "50%",
+        transform: "translateY(-50%)",
+      },
+      width: 400,
+      ...config,
+      onOk: () => {
+        resolve();
+      },
+      onCancel: () => {
+        reject();
+      },
+    });
+  });
+};
+
+const onBack = async () => {
+  await confirm("当前有操作尚未保存，确定退出吗?");
+  modal.visible = false;
+};
+
+const onSave = async () => {
+  const d = {
+    data: data.value,
+    config: config.value,
+  };
+  await saveData(d);
+  confirm('保存成功');
+};
+
 const contextItems: ContextmenuItem[] = [
   {
     name: "打开文件...",
     tip: "Ctrl + O",
     onClick: () => {
-      Modal.info({
+      Modal.confirm({
         title: "打开文件",
         content: () => h("div", { style: "margin: 20px" }, "暂未实现"),
         simple: false,
@@ -241,7 +282,7 @@ const pointItems: ContextmenuItem[] = [
 
 map.current = current;
 const nodeMap = computed(() => {
-  console.log('cpt');
+  console.log("cpt");
   const map = new Map<string, INode>();
   for (const line of data.value) {
     for (const node of line.nodes) {
@@ -308,8 +349,8 @@ const initPointHandler = () => {
   };
 };
 
-onMounted(() => {
-  data.value = loadData();
+onMounted(async () => {
+  data.value = (await loadData()).data;
   init();
 });
 

@@ -38,6 +38,19 @@ export interface ILine {
 }
 
 /**
+ * Config(Internal)
+ */
+export interface IConfig {}
+
+/**
+ * Data(Internal)
+ */
+export interface IData {
+  config: IConfig;
+  data: ILine[];
+}
+
+/**
  * generate random rgb color
  */
 export const randomColor = (): string => {
@@ -47,12 +60,9 @@ export const randomColor = (): string => {
   return `rgb(${r},${g},${b})`;
 };
 
-/**
- * mock data
- */
-export const loadData = (): ILine[] => {
+const mockData = () => {
   const items = Array(12).fill(0);
-  return items.map((_, index) => {
+  const data: ILine[] = items.map((_, index) => {
     const color = randomColor();
     const _children = Array(10).fill(0);
     const nodes: INode[] = _children.map((_, _index) => {
@@ -86,6 +96,23 @@ export const loadData = (): ILine[] => {
       nodes,
     };
   });
+  const config = {};
+  return { config, data };
+};
+
+/**
+ * mock data
+ */
+export const loadData = async (): Promise<IData> => {
+  const local = localStorage.getItem("__MAP_EDITOR_DATA__");
+  if (local) {
+    return JSON.parse(local);
+  }
+  return mockData();
+};
+
+export const saveData = async (data: IData) => {
+  localStorage.setItem("__MAP_EDITOR_DATA__", JSON.stringify(data));
 };
 
 /**
