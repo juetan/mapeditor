@@ -4,8 +4,7 @@
     <TypeNode :current="current" v-if="current.selectedType === SelectType.NODE" />
     <TypeLine :current="current" v-else-if="current.selectedType === SelectType.LINE" />
     <TypeEdge :current="current" v-else-if="current.selectedType === SelectType.EDGE" />
-    <TypeConfig :current="current" v-else-if="current.selectedType === SelectType.CONFIG" />
-    <Empty v-else> 请选择组件 </Empty>
+    <TypeConfig :current="current" v-else="current.selectedType === SelectType.CONFIG" />
   </div>
 </template>
 

@@ -14,35 +14,35 @@
           @change="(v) => emit('modify-show-label', v)"
           style="margin-right: 8px"
         >
-          显示节点标签
+          节点标签
         </Checkbox>
         <Link type="text" @click="emit('modify-rerender')">
           <template #icon><IconRefresh /></template>
-          重新渲染
+          渲染
         </Link>
         <Link type="text" @click="emit('modify-edge')">
           <template #icon><IconLink /></template>
-          编辑边点
+          边点
         </Link>
         <Link type="text" @click="emit('modify-node')">
           <template #icon><IconCopy /></template>
-          编辑节点
+          节点
         </Link>
         <Link type="text" @click="emit('modify-none')">
           <template #icon><IconExport /></template>
-          取消编辑
+          取消
         </Link>
         <Link type="text" @click="onSelectConfig">
           <template #icon><IconSettings /></template>
-          全局设置
+          设置
         </Link>
         <Link type="text">
           <template #icon><IconPlayArrow /></template>
-          预览效果
+          预览
         </Link>
         <Link type="text" @click="emit('save')">
           <template #icon><IconCheck /></template>
-          立即保存
+          保存
         </Link>
       </div>
     </template>
