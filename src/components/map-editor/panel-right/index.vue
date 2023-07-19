@@ -9,7 +9,6 @@
 </template>
 
 <script setup lang="ts">
-import { Empty } from "@arco-design/web-vue";
 import { MeContext, SelectType } from "../main/interface";
 import TypeConfig from "./type-config.vue";
 import TypeEdge from "./type-edge.vue";
