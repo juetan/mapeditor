@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="tsx">
-import { PageHeader } from "@arco-design/web-vue";
+import { Button, PageHeader, Tooltip } from "@arco-design/web-vue";
 import {
 IconCheckCircle,
 IconCopy,
