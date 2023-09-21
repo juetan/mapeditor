@@ -1,15 +1,17 @@
 <template>
-  <PageHeader title="地图编辑器" class="editor-header" @back="emit('back')">
+  <PageHeader title="地图编辑器" class="editor-header" @back="emit('back')" arco-theme="dark">
     <template #title>
-      <span>地图编辑器</span>
-      <span class="editor-tip">
-        &nbsp;(线路：{{ stat.lineCount }}/{{ stat.lineTotal }} , 节点: {{ stat.nodeCount }}/{{ stat.nodeTotal }} ;
-        缩放比例：{{ (config.zoom * 100).toFixed(2) }}%)
-      </span>
+      <div style="display: flex; align-items: center">
+        <span style="font-weight: 700; font-size: 18px;">地图编辑器</span>
+        <span class="editor-tip">
+          &nbsp;(线路：{{ stat.lineCount }}/{{ stat.lineTotal }} , 节点: {{ stat.nodeCount }}/{{ stat.nodeTotal }} ;
+          缩放比例：{{ (config.zoom * 100).toFixed(2) }}%)
+        </span>
+      </div>
     </template>
     <template #extra>
       <div class="editor-header-right">
-        <Checkbox
+        <!-- <Checkbox
           v-model="config.showNodeLabel"
           @change="(v) => emit('modify-show-label', v)"
           style="margin-right: 8px"
@@ -44,15 +46,27 @@
           <template #icon><IconCheck /></template>
           保存
         </Link>
+          显示节点标签
+        </Checkbox> -->
+        <Tooltip v-for="btn in buttons" :key="btn.text">
+          <template #content>
+            {{ btn.text }}
+          </template>
+          <Button :type="btn.type" @click="btn.onClick">
+            <template #icon>
+              <component :is="btn.icon"></component>
+            </template>
+          </Button>
+        </Tooltip>
       </div>
     </template>
   </PageHeader>
 </template>
 
-<script setup lang="ts">
-import { Checkbox, Link, PageHeader } from "@arco-design/web-vue";
+<script setup lang="tsx">
+import { PageHeader } from "@arco-design/web-vue";
 import {
-IconCheck,
+IconCheckCircle,
 IconCopy,
 IconExport,
 IconLink,
@@ -88,6 +102,45 @@ const onSelectConfig = () => {
   current.value.selectedType = SelectType.CONFIG;
   current.value.selected = props.config;
 };
+
+const buttons = [
+  {
+    icon: IconRefresh,
+    text: "重新渲染",
+    onClick: () => emit("modify-rerender"),
+  },
+  {
+    icon: IconLink,
+    text: "编辑边点",
+    onClick: () => emit("modify-edge"),
+  },
+  {
+    icon: IconCopy,
+    text: "编辑节点",
+    onClick: () => emit("modify-node"),
+  },
+  {
+    icon: IconExport,
+    text: "取消编辑",
+    onClick: () => emit("modify-none"),
+  },
+  {
+    icon: IconSettings,
+    text: "全局设置",
+    onClick: () => onSelectConfig(),
+  },
+  {
+    icon: IconPlayArrow,
+    text: "预览效果",
+    onClick: () => emit("modify-rerender"),
+  },
+  {
+    icon: IconCheckCircle,
+    type: "primary" as any,
+    text: "立即保存",
+    onClick: () => emit("save"),
+  },
+];
 </script>
 
 <style>
@@ -98,6 +151,6 @@ const onSelectConfig = () => {
 .editor-header-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
 }
 </style>

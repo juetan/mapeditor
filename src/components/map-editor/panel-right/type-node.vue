@@ -4,7 +4,7 @@
       <FormItem label="节点名称">
         <Input v-model="current.selected.name"></Input>
       </FormItem>
-      <FormItem label="父级名称">
+      <FormItem label="父级名称" :disabled="true">
         <Input v-model="current.selected.name"></Input>
       </FormItem>
       <FormItem label="坐标X">
@@ -13,13 +13,14 @@
       <FormItem label="坐标Y">
         <InputNumber v-model="current.selected.y" :min="0" />
       </FormItem>
-      <FormItem label="站名偏移X">
+      <div style="margin-bottom: 12px; font-size: 16px;">标签设置</div>
+      <FormItem label="偏移X">
         <InputNumber v-model="current.selected.labelX" />
       </FormItem>
-      <FormItem label="站名偏移Y">
+      <FormItem label="偏移Y">
         <InputNumber v-model="current.selected.labelY" />
       </FormItem>
-      <FormItem label="站名旋转角度">
+      <FormItem label="旋转角度(-90 ~ 90)">
         <InputNumber v-model="current.selected.labelRotate" :min="-90" :max="90" />
       </FormItem>
     </Form>

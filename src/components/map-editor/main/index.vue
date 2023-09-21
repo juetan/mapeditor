@@ -547,6 +547,10 @@ div.arco-modal {
   display: grid;
   grid-template-rows: auto 1fr;
 }
+div.arco-modal-header {
+  height: 52px;
+  /* background-color: #2a2a2b; */
+}
 div.arco-modal-body {
   padding: 0;
 }
@@ -554,7 +558,7 @@ div.arco-modal-body {
   height: 100%;
   width: 100%;
   display: grid;
-  grid-template-columns: 224px 1fr 200px;
+  grid-template-columns: 256px 1fr 280px;
   overflow: hidden;
   background: #f1f1f1;
 }

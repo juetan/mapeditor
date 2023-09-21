@@ -5,6 +5,12 @@
         <div style="margin-bottom: 8px">#线路列表</div>
         <Collapse :bordered="false" :expand-icon-position="'right'">
           <CollapseItem v-for="line in data" :key="line.id" :header="line.name">
+            <template #header>
+              <div :style="`display: flex; align-items: center; gap: 8px`">
+                <div style="display: inline-block; width: 12px; height: 12px; border-radius: 2px;" :style="`background-color: ${line.color};`"></div>
+                {{ line.name }}
+              </div>
+            </template>
             <div>基本属性</div>
             <ul class="editor-node-list">
               <li
